@@ -1,3 +1,4 @@
+import Image from "next/image";
 import FilmStrip from "@/components/FilmStrip";
 import {
   TicketIcon,
@@ -194,6 +195,33 @@ export default function Home() {
               <p className="step-desc">{s.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── LUMIÈRE BROTHERS ────────────────────────────────── */}
+      <section className="lumiere-tribute">
+        <div className="lumiere-tribute-inner">
+          <div className="lumiere-img-wrap">
+            <Image
+              src="/Lumière_brothers.jpg"
+              alt="Auguste and Louis Lumière"
+              width={320}
+              height={400}
+              className="lumiere-img"
+            />
+          </div>
+          <div className="lumiere-text">
+            <p className="section-label" style={{ textAlign: "left" }}>The Name</p>
+            <h2 className="lumiere-title">
+              Named after the brothers<br />who started it <em>all.</em>
+            </h2>
+            <p className="lumiere-desc">
+              In 1895, Auguste and Louis Lumière held the world&apos;s first public
+              film screening in Paris. They invented the Cinématographe and gave
+              cinema to the world. Lumière carries their spirit: bringing people
+              together around the screen, one room at a time.
+            </p>
+          </div>
         </div>
       </section>
 
