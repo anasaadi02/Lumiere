@@ -83,14 +83,14 @@ export default function Home() {
     <>
       {/* ── NAV ─────────────────────────────────────────────── */}
       <nav className="sr-nav">
-        <a href="#" className="logo">
+        <a href="/" className="logo">
           Lumi<span>ère</span>
         </a>
         <ul>
           <li><a href="#features">Features</a></li>
           <li><a href="#how-it-works">How It Works</a></li>
           <li><a href="#pricing">Pricing</a></li>
-          <li><a href="#" className="nav-cta">Open a Screen</a></li>
+          <li><a href="/create" className="nav-cta">Open a Screen</a></li>
         </ul>
       </nav>
 
@@ -117,10 +117,10 @@ export default function Home() {
             anything together, with voice, chat, and reactions in real time.
           </p>
           <div className="hero-actions">
-            <a href="#" className="btn-primary">
+            <a href="/create" className="btn-primary">
               Open a Free Room
             </a>
-            <a href="#" className="btn-ghost">
+            <a href="/create" className="btn-ghost">
               <span className="play-icon" />
               Watch the Demo
             </a>
@@ -238,14 +238,14 @@ export default function Home() {
           No credit card. No install. Just a room, your friends, and whatever's
           worth watching tonight.
         </p>
-        <a href="#" className="btn-primary">
+        <a href="/create" className="btn-primary">
           Open Your First Room for Free
         </a>
       </section>
 
       {/* ── FOOTER ──────────────────────────────────────────── */}
       <footer className="sr-footer">
-        <a href="#" className="logo">
+        <a href="/" className="logo">
           Lumi<span>ère</span>
         </a>
         <ul className="footer-links">
