@@ -4,17 +4,13 @@ import { useEffect, useRef } from "react";
 
 export default function CustomCursor() {
   const cursorRef = useRef<HTMLDivElement>(null);
-  const ringRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const cursor = cursorRef.current;
-    const ring = ringRef.current;
-    if (!cursor || !ring) return;
+    if (!cursor) return;
 
     let mx = 0,
       my = 0,
-      rx = 0,
-      ry = 0,
       active = true;
 
     const onMouseMove = (e: MouseEvent) => {
@@ -28,10 +24,6 @@ export default function CustomCursor() {
       if (!active) return;
       cursor.style.left = mx + "px";
       cursor.style.top = my + "px";
-      rx += (mx - rx) * 0.12;
-      ry += (my - ry) * 0.12;
-      ring.style.left = rx + "px";
-      ring.style.top = ry + "px";
       requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
@@ -39,15 +31,11 @@ export default function CustomCursor() {
     const expand = () => {
       cursor.style.width = "16px";
       cursor.style.height = "16px";
-      ring.style.width = "52px";
-      ring.style.height = "52px";
     };
 
     const shrink = () => {
       cursor.style.width = "10px";
       cursor.style.height = "10px";
-      ring.style.width = "36px";
-      ring.style.height = "36px";
     };
 
     const attach = () => {
@@ -75,10 +63,5 @@ export default function CustomCursor() {
     };
   }, []);
 
-  return (
-    <>
-      <div ref={cursorRef} className="cursor" />
-      <div ref={ringRef} className="cursor-ring" />
-    </>
-  );
+  return <div ref={cursorRef} className="cursor" />;
 }

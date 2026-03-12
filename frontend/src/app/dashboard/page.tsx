@@ -6,6 +6,7 @@ import {
   UsersIcon,
   ClapperboardIcon,
   SparklesIcon,
+  FilmIcon,
 } from "@/components/Icons";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
@@ -15,6 +16,8 @@ export const metadata = {
   title: "Dashboard — Lumière",
   description: "Your personal screening room at Lumière.",
 };
+
+const ROMAN = ["I", "II", "III", "IV", "V", "VI"];
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -26,16 +29,36 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  let profile: { username?: string } | null = null;
-  const { data: profileData } = await supabase
-    .from("profiles")
-    .select("username")
-    .eq("id", user.id)
-    .single();
-  if (profileData) profile = profileData;
+  const [
+    { data: profileData },
+    { count: roomsCount },
+    { count: videosQueued },
+    { count: messagesSent },
+    { data: recentRooms },
+  ] = await Promise.all([
+    supabase.from("profiles").select("username").eq("id", user.id).single(),
+    supabase
+      .from("rooms")
+      .select("id", { count: "exact", head: true })
+      .eq("created_by", user.id),
+    supabase
+      .from("queue_items")
+      .select("id", { count: "exact", head: true })
+      .eq("added_by", user.id),
+    supabase
+      .from("messages")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id),
+    supabase
+      .from("rooms")
+      .select("id, name, created_at, current_video_title")
+      .eq("created_by", user.id)
+      .order("created_at", { ascending: false })
+      .limit(6),
+  ]);
 
   const displayName =
-    profile?.username ||
+    profileData?.username ||
     (user.user_metadata?.username as string | undefined) ||
     user.email?.split("@")[0] ||
     "Member";
@@ -53,6 +76,8 @@ export default async function DashboardPage() {
         day: "numeric",
       })
     : null;
+
+  const hasRooms = recentRooms && recentRooms.length > 0;
 
   return (
     <div className="dash-page">
@@ -114,23 +139,25 @@ export default async function DashboardPage() {
         {/* Stat row */}
         <div className="dash-stats">
           <div className="dash-stat">
-            <span className="dash-stat-num">0</span>
+            <span className="dash-stat-num">{roomsCount ?? 0}</span>
             <span className="dash-stat-label">Rooms Created</span>
           </div>
           <div className="dash-stat-sep" />
           <div className="dash-stat">
-            <span className="dash-stat-num">0</span>
-            <span className="dash-stat-label">Screenings Joined</span>
+            <span className="dash-stat-num">{videosQueued ?? 0}</span>
+            <span className="dash-stat-label">Videos Queued</span>
           </div>
           <div className="dash-stat-sep" />
           <div className="dash-stat">
-            <span className="dash-stat-num">0</span>
-            <span className="dash-stat-label">Hours Watched</span>
+            <span className="dash-stat-num">{messagesSent ?? 0}</span>
+            <span className="dash-stat-label">Messages Sent</span>
           </div>
           <div className="dash-stat-sep" />
           <div className="dash-stat">
-            <span className="dash-stat-num">0</span>
-            <span className="dash-stat-label">Friends Invited</span>
+            <span className="dash-stat-num">
+              {((videosQueued ?? 0) * 2).toString()}h
+            </span>
+            <span className="dash-stat-label">Est. Watch Time</span>
           </div>
         </div>
 
@@ -199,24 +226,55 @@ export default async function DashboardPage() {
             <div>
               <p className="dash-section-eyebrow">The Archive</p>
               <h2 className="dash-section-title dash-section-title--sm">
-                Recent <em>Screenings</em>
+                Your <em>Rooms</em>
               </h2>
             </div>
           </div>
 
-          <div className="dash-screenings-empty">
-            <span className="dash-empty-reel">
-              <FilmReelIcon size={52} />
-            </span>
-            <p className="dash-empty-title">The reel is blank.</p>
-            <p className="dash-empty-sub">
-              Your screening history will appear here once you open or join your
-              first room.
-            </p>
-            <a href="/create" className="btn-primary dash-empty-cta">
-              Open your first room
-            </a>
-          </div>
+          {hasRooms ? (
+            <div className="dash-screenings-grid">
+              {recentRooms.map((room, i) => (
+                <a
+                  key={room.id}
+                  href={`/room/${room.id}`}
+                  className="dash-room-card"
+                >
+                  <span className="dash-room-card-num">{ROMAN[i] ?? i + 1}</span>
+                  <span className="dash-room-card-name">{room.name}</span>
+                  {room.current_video_title && (
+                    <span className="dash-room-card-video">
+                      <FilmIcon size={11} />
+                      &nbsp;{room.current_video_title}
+                    </span>
+                  )}
+                  <div className="dash-room-card-meta">
+                    <span className="dash-room-card-id">{room.id}</span>
+                    <span>
+                      {new Date(room.created_at).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <span className="dash-room-card-arrow">→</span>
+                  </div>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <div className="dash-screenings-empty">
+              <span className="dash-empty-reel">
+                <FilmReelIcon size={52} />
+              </span>
+              <p className="dash-empty-title">The reel is blank.</p>
+              <p className="dash-empty-sub">
+                Your rooms will appear here once you create your first screening.
+              </p>
+              <a href="/create" className="btn-primary dash-empty-cta">
+                Open your first room
+              </a>
+            </div>
+          )}
         </section>
 
         {/* Profile details */}

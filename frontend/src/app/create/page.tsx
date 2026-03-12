@@ -1,5 +1,6 @@
 import FilmStrip from "@/components/FilmStrip";
 import { TicketIcon } from "@/components/Icons";
+import { CreateRoomForm } from "./CreateRoomForm";
 
 export const metadata = {
   title: "Open a Room — Lumière",
@@ -41,45 +42,7 @@ export default function CreateRoom() {
             </p>
           </div>
 
-          {/* Form */}
-          <form className="create-form" action="#" method="POST">
-
-            {/* Room name */}
-            <div className="create-field">
-              <label className="create-label" htmlFor="room-name">
-                Room Name
-              </label>
-              <input
-                id="room-name"
-                className="create-input"
-                type="text"
-                placeholder="e.g. Friday Night Cinema"
-                maxLength={48}
-                autoComplete="off"
-              />
-            </div>
-
-            {/* Password */}
-            <div className="create-field">
-              <label className="create-label" htmlFor="room-password">
-                Password
-                <span className="create-label-hint">Optional</span>
-              </label>
-              <input
-                id="room-password"
-                className="create-input"
-                type="password"
-                placeholder="Leave empty for an open room"
-                autoComplete="new-password"
-              />
-            </div>
-
-            {/* Submit */}
-            <button type="submit" className="btn-primary create-submit">
-              Open the Room
-            </button>
-
-          </form>
+          <CreateRoomForm />
 
           {/* Footer note */}
           <p className="create-note">

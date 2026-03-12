@@ -1,12 +1,19 @@
 import FilmStrip from "@/components/FilmStrip";
 import { TicketIcon } from "@/components/Icons";
+import { JoinRoomForm } from "./JoinRoomForm";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata = {
   title: "Join a Room — Lumière",
   description: "Join a screening room with your friends.",
 };
 
-export default function JoinRoom() {
+export default async function JoinRoom() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <div className="create-page create-page--join">
       <div className="create-bg" />
@@ -37,54 +44,7 @@ export default function JoinRoom() {
             </p>
           </div>
 
-          <form className="create-form" action="#" method="POST">
-
-            <div className="create-field">
-              <label className="create-label" htmlFor="room-link">
-                Room Link or Code
-              </label>
-              <input
-                id="room-link"
-                className="create-input"
-                type="text"
-                placeholder="e.g. lumiere.app/room/abc123 or abc123"
-                autoComplete="off"
-              />
-            </div>
-
-            <div className="create-field">
-              <label className="create-label" htmlFor="nickname">
-                Your Name
-              </label>
-              <input
-                id="nickname"
-                className="create-input"
-                type="text"
-                placeholder="How others will see you"
-                maxLength={32}
-                autoComplete="off"
-              />
-            </div>
-
-            <div className="create-field">
-              <label className="create-label" htmlFor="join-password">
-                Room Password
-                <span className="create-label-hint">If required</span>
-              </label>
-              <input
-                id="join-password"
-                className="create-input"
-                type="password"
-                placeholder="Leave empty if none"
-                autoComplete="current-password"
-              />
-            </div>
-
-            <button type="submit" className="btn-primary create-submit">
-              Join the Room
-            </button>
-
-          </form>
+          <JoinRoomForm isLoggedIn={!!user} />
 
           <p className="create-note">
             Want to save rooms and track your history?{" "}

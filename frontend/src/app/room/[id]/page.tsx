@@ -3,40 +3,69 @@ import {
   PauseIcon,
   VolumeIcon,
   FullscreenIcon,
-  ShareIcon,
-  LeaveIcon,
-  SendIcon,
-  PlusIcon,
-  UsersIcon,
-  QueueIcon,
   SparklesIcon,
   MicrophoneIcon,
 } from "@/components/Icons";
+import { createClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import { RoomTopbarActions } from "./RoomTopbarActions";
+import { RoomMembers } from "./RoomMembers";
+import { RoomQueue } from "./RoomQueue";
+import { RoomChat } from "./RoomChat";
 
-export function generateMetadata({ params }: { params: { id: string } }) {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
   return {
-    title: `Room ${params.id} — Lumière`,
+    title: `Room ${id} — Lumière`,
   };
 }
 
 const REACTIONS = ["😂", "😮", "❤️", "👏", "🔥", "😭"];
 
-const MOCK_MESSAGES = [
-  { user: "sofia", text: "omg this scene", time: "21:04" },
-  { user: "leo", text: "i knew it was him!!", time: "21:04" },
-  { user: "mia", text: "the music is so good", time: "21:05" },
-  { user: "sofia", text: "no spoilers for the ending please 😭", time: "21:06" },
-];
+export default async function RoomPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ nickname?: string }>;
+}) {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: room, error } = await supabase
+    .from("rooms")
+    .select("id, name, current_video_title, created_by")
+    .eq("id", id)
+    .single();
 
-const MOCK_QUEUE = [
-  { title: "Now Playing", src: "Interstellar (2014)", active: true },
-  { title: "Up Next", src: "Arrival (2016)", active: false },
-  { title: "Queued", src: "Dune: Part One (2021)", active: false },
-];
+  if (error || !room) {
+    notFound();
+  }
 
-const MOCK_MEMBERS = ["sofia", "leo", "mia", "you"];
+  const { nickname } = await searchParams;
 
-export default function RoomPage({ params }: { params: { id: string } }) {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  let displayName: string;
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("username")
+      .eq("id", user.id)
+      .single();
+    displayName = profile?.username ?? user.email?.split("@")[0] ?? "Guest";
+  } else {
+    displayName = nickname?.trim() || "Host";
+  }
+
+  const isHost =
+    (user && room.created_by && room.created_by === user.id) ||
+    (!user && !nickname);
+
   return (
     <div className="room-page">
 
@@ -47,19 +76,12 @@ export default function RoomPage({ params }: { params: { id: string } }) {
             Lumi<span>ère</span>
           </a>
           <div className="room-title-wrap">
-            <span className="room-name">Friday Night Cinema</span>
-            <span className="room-id">#{params.id}</span>
+            <span className="room-name">{room.name}</span>
+            <span className="room-id">#{room.id}</span>
           </div>
         </div>
         <div className="room-topbar-right">
-          <button className="room-topbar-btn" title="Share room">
-            <ShareIcon size={16} />
-            <span>Share</span>
-          </button>
-          <button className="room-topbar-btn room-topbar-btn--leave" title="Leave room">
-            <LeaveIcon size={16} />
-            <span>Leave</span>
-          </button>
+          <RoomTopbarActions roomId={room.id} />
         </div>
       </header>
 
@@ -68,29 +90,7 @@ export default function RoomPage({ params }: { params: { id: string } }) {
 
         {/* ── QUEUE (left sidebar) ─────────────────────────── */}
         <aside className="room-sidebar room-sidebar--left">
-          <div className="room-sidebar-header">
-            <QueueIcon size={14} />
-            <span>Queue</span>
-          </div>
-
-          <ul className="room-queue">
-            {MOCK_QUEUE.map((item) => (
-              <li key={item.src} className={`room-queue-item${item.active ? " room-queue-item--active" : ""}`}>
-                <div className="room-queue-dot" />
-                <div className="room-queue-info">
-                  <span className="room-queue-label">{item.title}</span>
-                  <span className="room-queue-src">{item.src}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="room-queue-add">
-            <input className="room-queue-input" type="text" placeholder="Paste a link or title..." />
-            <button className="room-queue-btn" title="Add to queue">
-              <PlusIcon size={14} />
-            </button>
-          </div>
+          <RoomQueue roomId={room.id} />
         </aside>
 
         {/* ── VIDEO (center) ───────────────────────────────── */}
@@ -159,46 +159,15 @@ export default function RoomPage({ params }: { params: { id: string } }) {
         {/* ── CHAT (right sidebar) ─────────────────────────── */}
         <aside className="room-sidebar room-sidebar--right">
           {/* Members */}
-          <div className="room-sidebar-header">
-            <UsersIcon size={14} />
-            <span>Members ({MOCK_MEMBERS.length})</span>
-          </div>
-          <div className="room-members">
-            {MOCK_MEMBERS.map((m) => (
-              <div key={m} className="room-member">
-                <div className="room-member-dot" />
-                <span>{m}</span>
-              </div>
-            ))}
-          </div>
+          <RoomMembers
+            roomId={room.id}
+            nickname={displayName}
+            isHost={isHost}
+          />
 
           <div className="room-sidebar-divider" />
 
-          {/* Chat */}
-          <div className="room-sidebar-header">
-            <span>Chat</span>
-          </div>
-          <div className="room-chat-messages">
-            {MOCK_MESSAGES.map((msg, i) => (
-              <div key={i} className="room-chat-msg">
-                <span className="room-chat-user">{msg.user}</span>
-                <span className="room-chat-time">{msg.time}</span>
-                <p className="room-chat-text">{msg.text}</p>
-              </div>
-            ))}
-          </div>
-
-          <form className="room-chat-form" action="#" method="POST">
-            <input
-              className="room-chat-input"
-              type="text"
-              placeholder="Say something..."
-              autoComplete="off"
-            />
-            <button type="submit" className="room-chat-send" title="Send">
-              <SendIcon size={14} />
-            </button>
-          </form>
+          <RoomChat roomId={room.id} nickname={displayName} />
         </aside>
       </div>
     </div>
