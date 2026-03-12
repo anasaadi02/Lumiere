@@ -1,4 +1,5 @@
 import FilmStrip from "@/components/FilmStrip";
+import { SignUpForm } from "./SignUpForm";
 
 export const metadata = {
   title: "Sign Up — Lumière",
@@ -32,69 +33,7 @@ export default function SignUp() {
             </p>
           </div>
 
-          <form className="auth-form" action="#" method="POST">
-            <div className="auth-field">
-              <label className="auth-label" htmlFor="username">
-                Username
-              </label>
-              <input
-                id="username"
-                className="auth-input"
-                type="text"
-                placeholder="johndoe"
-                autoComplete="username"
-                required
-              />
-            </div>
-
-            <div className="auth-field">
-              <label className="auth-label" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                className="auth-input"
-                type="email"
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            <div className="auth-field">
-              <label className="auth-label" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                className="auth-input"
-                type="password"
-                placeholder="At least 8 characters"
-                autoComplete="new-password"
-                required
-                minLength={8}
-              />
-            </div>
-
-            <div className="auth-field">
-              <label className="auth-label" htmlFor="confirm-password">
-                Confirm Password
-              </label>
-              <input
-                id="confirm-password"
-                className="auth-input"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="new-password"
-                required
-                minLength={8}
-              />
-            </div>
-
-            <button type="submit" className="btn-primary auth-submit">
-              Create Account
-            </button>
-          </form>
+          <SignUpForm />
 
           <p className="auth-note">
             Already have an account?{" "}

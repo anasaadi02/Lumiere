@@ -1,4 +1,5 @@
 import FilmStrip from "@/components/FilmStrip";
+import { SignInForm } from "./SignInForm";
 
 export const metadata = {
   title: "Sign In — Lumière",
@@ -32,43 +33,7 @@ export default function SignIn() {
             </p>
           </div>
 
-          <form className="auth-form" action="#" method="POST">
-            <div className="auth-field">
-              <label className="auth-label" htmlFor="email">
-                Email
-              </label>
-              <input
-                id="email"
-                className="auth-input"
-                type="email"
-                placeholder="you@example.com"
-                autoComplete="email"
-                required
-              />
-            </div>
-
-            <div className="auth-field">
-              <label className="auth-label" htmlFor="password">
-                Password
-              </label>
-              <input
-                id="password"
-                className="auth-input"
-                type="password"
-                placeholder="••••••••"
-                autoComplete="current-password"
-                required
-              />
-            </div>
-
-            <a href="/forgot-password" className="auth-forgot">
-              Forgot password?
-            </a>
-
-            <button type="submit" className="btn-primary auth-submit">
-              Sign In
-            </button>
-          </form>
+          <SignInForm />
 
           <p className="auth-note">
             Don&apos;t have an account?{" "}

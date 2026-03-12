@@ -9,6 +9,7 @@ import {
   UserBadgeIcon,
   VideoCameraIcon,
 } from "@/components/Icons";
+import { createClient } from "@/lib/supabase/server";
 
 const features = [
   {
@@ -78,7 +79,12 @@ const steps = [
   },
 ];
 
-export default function Home() {
+export default async function Home() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
     <>
       {/* ── NAV ─────────────────────────────────────────────── */}
@@ -91,6 +97,11 @@ export default function Home() {
           <li><a href="#how-it-works">How It Works</a></li>
           <li><a href="#pricing">Pricing</a></li>
           <li><a href="/create" className="nav-cta">Open a Screen</a></li>
+          {user ? (
+            <li><a href="/dashboard">Dashboard</a></li>
+          ) : (
+            <li><a href="/sign-in">Sign In</a></li>
+          )}
         </ul>
       </nav>
 
