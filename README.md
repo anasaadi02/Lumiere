@@ -62,7 +62,6 @@ Runs at `http://localhost:3001` (set via `PORT` env var).
 
 The name pays homage to Auguste and Louis Lumière, the brothers who invented the Cinématographe in 1895 and held the first public film screening. They brought moving images to audiences and shaped how we watch together. Lumière carries that spirit: bringing people together around the screen, one room at a time.
 
-![Auguste and Louis Lumière](docs/lumiere-brothers.jpg)
 
 ## License
 
