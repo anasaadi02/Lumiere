@@ -36,10 +36,12 @@ export function RoomChat({ roomId, nickname }: Props) {
     const supabase = createClient();
 
     const fetchMessages = async () => {
+      const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
       const { data } = await supabase
         .from("messages")
         .select("id, room_id, nickname, content, created_at")
         .eq("room_id", roomId)
+        .gte("created_at", since)
         .order("created_at", { ascending: true });
       setMessages(data ?? []);
     };

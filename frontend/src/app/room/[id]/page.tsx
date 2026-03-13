@@ -45,6 +45,9 @@ export default async function RoomPage({
     notFound();
   }
 
+  // Clean up messages older than 24h (storage optimization)
+  void supabase.rpc("delete_messages_older_than_24h");
+
   const { nickname } = await searchParams;
 
   const {
