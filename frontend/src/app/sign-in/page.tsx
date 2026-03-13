@@ -6,7 +6,12 @@ export const metadata = {
   description: "Sign in to save rooms and track your watch history.",
 };
 
-export default function SignIn() {
+export default async function SignIn({
+  searchParams,
+}: {
+  searchParams: Promise<{ redirect?: string }>;
+}) {
+  const { redirect: redirectTo } = await searchParams;
   return (
     <div className="auth-page">
       <div className="create-bg" />
@@ -33,7 +38,7 @@ export default function SignIn() {
             </p>
           </div>
 
-          <SignInForm />
+          <SignInForm redirectTo={redirectTo} />
 
           <p className="auth-note">
             Don&apos;t have an account?{" "}

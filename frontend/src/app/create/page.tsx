@@ -1,13 +1,24 @@
 import FilmStrip from "@/components/FilmStrip";
 import { TicketIcon } from "@/components/Icons";
 import { CreateRoomForm } from "./CreateRoomForm";
+import { createClient } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
 export const metadata = {
   title: "Open a Room — Lumière",
   description: "Create a private screening room and invite your friends.",
 };
 
-export default function CreateRoom() {
+export default async function CreateRoom() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/sign-in?redirect=/create");
+  }
+
   return (
     <div className="create-page">
       {/* Background */}
@@ -44,11 +55,6 @@ export default function CreateRoom() {
 
           <CreateRoomForm />
 
-          {/* Footer note */}
-          <p className="create-note">
-            Want to save rooms and track your history?{" "}
-            <a href="/sign-in" className="create-link">Sign in</a>
-          </p>
           <div className="create-note-actions">
             <a href="/join" className="create-btn-secondary">Join a room instead</a>
           </div>

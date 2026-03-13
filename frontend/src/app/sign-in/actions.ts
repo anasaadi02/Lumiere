@@ -13,6 +13,7 @@ export async function signIn(
 
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
+  const redirectTo = formData.get("redirect") as string | null;
 
   const { error } = await supabase.auth.signInWithPassword({ email, password });
 
@@ -20,5 +21,9 @@ export async function signIn(
     return { error: error.message };
   }
 
-  redirect("/dashboard");
+  const safeRedirect =
+    redirectTo && redirectTo.startsWith("/") && !redirectTo.startsWith("//")
+      ? redirectTo
+      : "/dashboard";
+  redirect(safeRedirect);
 }

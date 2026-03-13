@@ -3,11 +3,16 @@
 import { useActionState } from "react";
 import { signIn, type SignInState } from "./actions";
 
-export function SignInForm() {
+type Props = { redirectTo?: string };
+
+export function SignInForm({ redirectTo }: Props) {
   const [state, formAction] = useActionState<SignInState, FormData>(signIn, { error: null });
 
   return (
     <form className="auth-form" action={formAction}>
+      {redirectTo && (
+        <input type="hidden" name="redirect" value={redirectTo} />
+      )}
       {state?.error && (
         <div className="auth-error" role="alert">
           {state.error}

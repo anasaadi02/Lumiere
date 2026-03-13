@@ -31,11 +31,15 @@ export async function createRoom(
     data: { user },
   } = await supabase.auth.getUser();
 
+  if (!user) {
+    redirect("/sign-in?redirect=/create");
+  }
+
   const { error } = await supabase.from("rooms").insert({
     id,
     name,
     password_hash: passwordHash,
-    created_by: user?.id ?? null,
+    created_by: user.id,
   });
 
   if (error) {
