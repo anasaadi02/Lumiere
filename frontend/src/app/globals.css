@@ -69,6 +69,21 @@ body::before {
   transition: transform 0.15s ease, width 0.3s, height 0.3s;
 }
 
+/* Force custom cursor on interactive elements (desktop only) */
+@media (min-width: 641px) {
+  a,
+  button,
+  input,
+  textarea,
+  select,
+  label,
+  [role="button"],
+  .room-progress-bar,
+  .room-volume-slider {
+    cursor: none;
+  }
+}
+
 /* ─── NAV ────────────────────────────────────────────────── */
 .sr-nav {
   position: fixed;
@@ -1226,7 +1241,6 @@ body::before {
   outline: none;
   transition: border-color 0.2s, background 0.2s;
   width: 100%;
-  cursor: auto;
 }
 
 .create-input::placeholder {
@@ -1244,7 +1258,6 @@ body::before {
   padding: 12px;
   font-size: 13px;
   margin-top: 4px;
-  cursor: pointer;
 }
 
 /* ─── Footer note ────────────────────────────────────────── */
@@ -1461,7 +1474,6 @@ body::before {
   outline: none;
   transition: border-color 0.2s, background 0.2s;
   width: 100%;
-  cursor: auto;
 }
 
 .auth-input::placeholder {
@@ -1493,7 +1505,6 @@ body::before {
   padding: 14px;
   font-size: 13px;
   margin-top: 4px;
-  cursor: pointer;
 }
 
 .auth-note {
@@ -1576,7 +1587,6 @@ body::before {
   text-transform: uppercase;
   font-family: var(--font-dm-sans), 'DM Sans', sans-serif;
   font-weight: 500;
-  cursor: pointer;
   padding: 0;
   transition: color 0.3s;
 }
@@ -2544,7 +2554,6 @@ body::before {
   font-size: 12px;
   padding: 8px 10px;
   outline: none;
-  cursor: auto;
 }
 
 .room-queue-input::placeholder { color: rgba(107, 96, 85, 0.6); }
@@ -2625,7 +2634,6 @@ body::before {
   background: rgba(255, 255, 255, 0.07);
   border-radius: 2px;
   position: relative;
-  cursor: pointer;
 }
 
 .room-progress-fill {
@@ -2702,7 +2710,6 @@ body::before {
   height: 3px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 2px;
-  cursor: pointer;
 }
 
 .room-volume-fill {
@@ -2844,7 +2851,6 @@ body::before {
   font-size: 12px;
   padding: 8px 10px;
   outline: none;
-  cursor: auto;
   transition: border-color 0.2s;
 }
 

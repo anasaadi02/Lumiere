@@ -131,9 +131,9 @@ export default async function Home() {
             <a href="/create" className="btn-primary">
               Open a Free Room
             </a>
-            <a href="/create" className="btn-ghost">
+            <a href="/join" className="btn-ghost">
               <span className="play-icon" />
-              Watch the Demo
+              Join a Room
             </a>
           </div>
         </div>

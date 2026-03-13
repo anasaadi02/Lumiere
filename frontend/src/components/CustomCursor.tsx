@@ -38,13 +38,14 @@ export default function CustomCursor() {
       cursor.style.height = "10px";
     };
 
+    const selector =
+      "a, button, input, textarea, select, label, [role='button'], .feature-card, .dash-action-card, .room-progress-bar, .room-volume-slider";
+
     const attach = () => {
-      document
-        .querySelectorAll("a, button, .feature-card")
-        .forEach((el) => {
-          el.addEventListener("mouseenter", expand);
-          el.addEventListener("mouseleave", shrink);
-        });
+      document.querySelectorAll(selector).forEach((el) => {
+        el.addEventListener("mouseenter", expand);
+        el.addEventListener("mouseleave", shrink);
+      });
     };
 
     attach();
@@ -56,7 +57,7 @@ export default function CustomCursor() {
       active = false;
       document.removeEventListener("mousemove", onMouseMove);
       observer.disconnect();
-      document.querySelectorAll("a, button, .feature-card").forEach((el) => {
+      document.querySelectorAll(selector).forEach((el) => {
         el.removeEventListener("mouseenter", expand);
         el.removeEventListener("mouseleave", shrink);
       });
