@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { QueueIcon, PlusIcon } from "@/components/Icons";
+import { QueueIcon, TrashIcon, ChevronUpIcon, ChevronDownIcon } from "@/components/Icons";
+import { AddVideoUrl } from "@/components/AddVideoUrl";
 
 type QueueItem = {
   id: string;
@@ -15,6 +16,7 @@ type QueueItem = {
 
 type Props = {
   roomId: string;
+  isHost?: boolean;
 };
 
 const LABELS: Record<number, string> = {
@@ -26,10 +28,8 @@ function getLabel(position: number): string {
   return LABELS[position] ?? "Queued";
 }
 
-export function RoomQueue({ roomId }: Props) {
+export function RoomQueue({ roomId, isHost = false }: Props) {
   const [items, setItems] = useState<QueueItem[]>([]);
-  const [input, setInput] = useState("");
-  const [adding, setAdding] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -50,28 +50,12 @@ export function RoomQueue({ roomId }: Props) {
       .on(
         "postgres_changes",
         {
-          event: "INSERT",
+          event: "*",
           schema: "public",
           table: "queue_items",
           filter: `room_id=eq.${roomId}`,
         },
-        (payload) => {
-          const newItem = payload.new as QueueItem;
-          if (!newItem) return;
-          setItems((prev) => {
-            const exists = prev.some((i) => i.id === newItem.id);
-            if (exists) return prev;
-            const idx = prev.findIndex(
-              (i) => i.id.startsWith("pending-") && i.title === newItem.title
-            );
-            if (idx >= 0) {
-              const updated = [...prev];
-              updated[idx] = newItem;
-              return updated.sort((a, b) => a.position - b.position);
-            }
-            return [...prev, newItem].sort((a, b) => a.position - b.position);
-          });
-        }
+        () => fetchQueue()
       )
       .subscribe();
 
@@ -80,38 +64,76 @@ export function RoomQueue({ roomId }: Props) {
     };
   }, [roomId]);
 
-  async function handleAdd(e: React.FormEvent) {
-    e.preventDefault();
-    const value = input.trim();
-    if (!value || adding) return;
-
-    setAdding(true);
+  async function addToQueue(url: string, title: string) {
     const tempId = `pending-${Date.now()}`;
-
     setItems((prev) => [
       ...prev,
       {
         id: tempId,
         room_id: roomId,
-        title: value,
-        src: value,
+        title,
+        src: url,
         position: prev.length,
         created_at: new Date().toISOString(),
       },
     ]);
-    setInput("");
 
     const supabase = createClient();
     const { error } = await supabase.from("queue_items").insert({
       room_id: roomId,
-      title: value,
-      src: value,
+      title,
+      src: url,
     });
 
-    setAdding(false);
     if (error) {
       setItems((prev) => prev.filter((i) => i.id !== tempId));
     }
+  }
+
+  async function handleRemove(itemId: string) {
+    if (!isHost) return;
+    const isPending = itemId.startsWith("pending-");
+    const prevItems = [...items];
+    setItems((prev) => prev.filter((i) => i.id !== itemId));
+    if (isPending) return;
+    const supabase = createClient();
+    const { error } = await supabase.from("queue_items").delete().eq("id", itemId);
+    if (error) {
+      setItems(prevItems);
+      console.error("[queue] delete failed:", error.message);
+    }
+  }
+
+  async function handleMoveUp(item: QueueItem) {
+    if (!isHost) return;
+    const idx = items.findIndex((i) => i.id === item.id);
+    if (idx <= 0) return;
+    const prev = items[idx - 1];
+    const supabase = createClient();
+    await supabase
+      .from("queue_items")
+      .update({ position: prev.position })
+      .eq("id", item.id);
+    await supabase
+      .from("queue_items")
+      .update({ position: item.position })
+      .eq("id", prev.id);
+  }
+
+  async function handleMoveDown(item: QueueItem) {
+    if (!isHost) return;
+    const idx = items.findIndex((i) => i.id === item.id);
+    if (idx < 0 || idx >= items.length - 1) return;
+    const next = items[idx + 1];
+    const supabase = createClient();
+    await supabase
+      .from("queue_items")
+      .update({ position: next.position })
+      .eq("id", item.id);
+    await supabase
+      .from("queue_items")
+      .update({ position: item.position })
+      .eq("id", next.id);
   }
 
   return (
@@ -125,42 +147,59 @@ export function RoomQueue({ roomId }: Props) {
         {items.length === 0 ? (
           <li className="room-queue-empty">Queue is empty</li>
         ) : (
-          items.map((item) => (
+          items.map((item, idx) => (
             <li
               key={item.id}
-              className={`room-queue-item${item.position === 0 ? " room-queue-item--active" : ""}`}
+              className={`room-queue-item${idx === 0 ? " room-queue-item--active" : ""}`}
             >
               <div className="room-queue-dot" />
               <div className="room-queue-info">
                 <span className="room-queue-label">
-                  {getLabel(item.position)}
+                  {getLabel(idx)}
                 </span>
                 <span className="room-queue-src">{item.title}</span>
               </div>
+              {isHost && (
+                <div className="room-queue-actions">
+                  <button
+                    type="button"
+                    className="room-queue-action-btn"
+                    title="Move up"
+                    onClick={() => handleMoveUp(item)}
+                    disabled={items.findIndex((i) => i.id === item.id) <= 0}
+                  >
+                    <ChevronUpIcon size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    className="room-queue-action-btn"
+                    title="Move down"
+                    onClick={() => handleMoveDown(item)}
+                    disabled={items.findIndex((i) => i.id === item.id) >= items.length - 1}
+                  >
+                    <ChevronDownIcon size={12} />
+                  </button>
+                  <button
+                    type="button"
+                    className="room-queue-action-btn room-queue-action-btn--danger"
+                    title="Remove"
+                    onClick={() => handleRemove(item.id)}
+                  >
+                    <TrashIcon size={12} />
+                  </button>
+                </div>
+              )}
             </li>
           ))
         )}
       </ul>
 
-      <form className="room-queue-add" onSubmit={handleAdd}>
-        <input
-          className="room-queue-input"
-          type="text"
-          placeholder="Paste a link or title..."
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={adding}
-          autoComplete="off"
-        />
-        <button
-          type="submit"
-          className="room-queue-btn"
-          title="Add to queue"
-          disabled={adding || !input.trim()}
-        >
-          <PlusIcon size={14} />
-        </button>
-      </form>
+      {isHost && (
+        <AddVideoUrl onResolved={(resolvedUrl, title) => void addToQueue(resolvedUrl, title)} />
+      )}
+      {!isHost && (
+        <p className="room-queue-hint">Only the host can manage the queue</p>
+      )}
     </>
   );
 }

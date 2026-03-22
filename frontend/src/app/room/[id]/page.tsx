@@ -1,17 +1,11 @@
-import {
-  PlayIcon,
-  PauseIcon,
-  VolumeIcon,
-  FullscreenIcon,
-  SparklesIcon,
-  MicrophoneIcon,
-} from "@/components/Icons";
+import { SparklesIcon, MicrophoneIcon } from "@/components/Icons";
 import { createClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
 import { RoomTopbarActions } from "./RoomTopbarActions";
 import { RoomMembers } from "./RoomMembers";
 import { RoomQueue } from "./RoomQueue";
 import { RoomChat } from "./RoomChat";
+import { RoomVideoPlayer } from "./RoomVideoPlayer";
 
 export async function generateMetadata({
   params,
@@ -93,61 +87,12 @@ export default async function RoomPage({
 
         {/* ── QUEUE (left sidebar) ─────────────────────────── */}
         <aside className="room-sidebar room-sidebar--left">
-          <RoomQueue roomId={room.id} />
+          <RoomQueue roomId={room.id} isHost={isHost} />
         </aside>
 
         {/* ── VIDEO (center) ───────────────────────────────── */}
         <main className="room-center">
-          {/* Player */}
-          <div className="room-player">
-            <div className="room-player-screen">
-              <div className="room-player-placeholder">
-                <PlayIcon size={48} />
-                <p>Interstellar (2014)</p>
-              </div>
-            </div>
-
-            {/* Progress bar */}
-            <div className="room-progress">
-              <span className="room-time">1:02:34</span>
-              <div className="room-progress-bar">
-                <div className="room-progress-fill" style={{ width: "38%" }} />
-                <div className="room-progress-thumb" style={{ left: "38%" }} />
-              </div>
-              <span className="room-time">2:49:00</span>
-            </div>
-
-            {/* Controls */}
-            <div className="room-controls">
-              <div className="room-controls-left">
-                <button className="room-ctrl-btn room-ctrl-btn--primary" title="Play / Pause">
-                  <PauseIcon size={20} />
-                </button>
-                <div className="room-volume">
-                  <button className="room-ctrl-btn" title="Volume">
-                    <VolumeIcon size={18} />
-                  </button>
-                  <div className="room-volume-slider">
-                    <div className="room-volume-fill" style={{ width: "70%" }} />
-                  </div>
-                </div>
-              </div>
-              <div className="room-controls-center">
-                <span className="room-sync-badge">● In Sync</span>
-              </div>
-              <div className="room-controls-right">
-                <button className="room-ctrl-btn" title="Reactions">
-                  <SparklesIcon size={18} />
-                </button>
-                <button className="room-ctrl-btn" title="Voice">
-                  <MicrophoneIcon size={18} />
-                </button>
-                <button className="room-ctrl-btn" title="Fullscreen">
-                  <FullscreenIcon size={18} />
-                </button>
-              </div>
-            </div>
-          </div>
+          <RoomVideoPlayer roomId={room.id} isHost={isHost} />
 
           {/* Reactions row */}
           <div className="room-reactions">

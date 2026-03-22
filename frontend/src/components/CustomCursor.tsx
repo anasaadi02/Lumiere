@@ -39,7 +39,7 @@ export default function CustomCursor() {
     };
 
     const selector =
-      "a, button, input, textarea, select, label, [role='button'], .feature-card, .dash-action-card, .room-progress-bar, .room-volume-slider";
+      "a, button, input, textarea, select, label, [role='button'], .feature-card, .dash-action-card, .room-progress-bar, .room-volume-slider, .room-ctrl-btn, .room-volume, .room-queue-action-btn, .room-queue-btn";
 
     const attach = () => {
       document.querySelectorAll(selector).forEach((el) => {
