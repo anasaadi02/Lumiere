@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { QueueIcon, TrashIcon, ChevronUpIcon, ChevronDownIcon } from "@/components/Icons";
 import { AddVideoUrl } from "@/components/AddVideoUrl";
+import { planReorder } from "@/lib/queueOrdering";
+import { getLabel } from "@/lib/queueLabels";
 
 type QueueItem = {
   id: string;
@@ -18,15 +20,6 @@ type Props = {
   roomId: string;
   isHost?: boolean;
 };
-
-const LABELS: Record<number, string> = {
-  0: "Now Playing",
-  1: "Up Next",
-};
-
-function getLabel(position: number): string {
-  return LABELS[position] ?? "Queued";
-}
 
 export function RoomQueue({ roomId, isHost = false }: Props) {
   const [items, setItems] = useState<QueueItem[]>([]);
@@ -104,36 +97,18 @@ export function RoomQueue({ roomId, isHost = false }: Props) {
     }
   }
 
-  async function handleMoveUp(item: QueueItem) {
+  async function move(item: QueueItem, direction: "up" | "down") {
     if (!isHost) return;
-    const idx = items.findIndex((i) => i.id === item.id);
-    if (idx <= 0) return;
-    const prev = items[idx - 1];
+    // The tested pure function decides what should change...
+    const updates = planReorder(items, item.id, direction);
+    if (!updates) return;
+    // ...and the component just persists it.
     const supabase = createClient();
-    await supabase
-      .from("queue_items")
-      .update({ position: prev.position })
-      .eq("id", item.id);
-    await supabase
-      .from("queue_items")
-      .update({ position: item.position })
-      .eq("id", prev.id);
-  }
-
-  async function handleMoveDown(item: QueueItem) {
-    if (!isHost) return;
-    const idx = items.findIndex((i) => i.id === item.id);
-    if (idx < 0 || idx >= items.length - 1) return;
-    const next = items[idx + 1];
-    const supabase = createClient();
-    await supabase
-      .from("queue_items")
-      .update({ position: next.position })
-      .eq("id", item.id);
-    await supabase
-      .from("queue_items")
-      .update({ position: item.position })
-      .eq("id", next.id);
+    await Promise.all(
+      updates.map((u) =>
+        supabase.from("queue_items").update({ position: u.position }).eq("id", u.id)
+      )
+    );
   }
 
   return (
@@ -165,7 +140,7 @@ export function RoomQueue({ roomId, isHost = false }: Props) {
                     type="button"
                     className="room-queue-action-btn"
                     title="Move up"
-                    onClick={() => handleMoveUp(item)}
+                    onClick={() => move(item, "up")}
                     disabled={items.findIndex((i) => i.id === item.id) <= 0}
                   >
                     <ChevronUpIcon size={12} />
@@ -174,7 +149,7 @@ export function RoomQueue({ roomId, isHost = false }: Props) {
                     type="button"
                     className="room-queue-action-btn"
                     title="Move down"
-                    onClick={() => handleMoveDown(item)}
+                    onClick={() => move(item, "down")}
                     disabled={items.findIndex((i) => i.id === item.id) >= items.length - 1}
                   >
                     <ChevronDownIcon size={12} />
